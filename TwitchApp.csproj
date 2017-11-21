@@ -51,10 +51,21 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ApiKey.cs" />
+    <Compile Include="App.cs" />
+    <Compile Include="ChannelInfo.cs" />
+    <Compile Include="NewApi\Client.cs" />
+    <Compile Include="Config.cs" />
+    <Compile Include="NewApi\Follow.cs" />
+    <Compile Include="NewApi\Game.cs" />
+    <Compile Include="NewApi\Parameters.cs" />
+    <Compile Include="NewApi\ResponseWrapper.cs" />
+    <Compile Include="NewApi\Stream.cs" />
+    <Compile Include="NewApi\User.cs" />
+    <Compile Include="NewApi\Video.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="TwitchClient.cs" />
-    <Compile Include="TwitchModel.cs" />
+    <Compile Include="ApiV3\TwitchClientV3.cs" />
+    <Compile Include="ApiV3\TwitchModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
