@@ -114,7 +114,7 @@ namespace TwitchApp
             await Task.WhenAll(tasks);
 
             var gamesTask = Client.GetGamesAsync(new GamesParameters { IDs = streams.Select(s => s.GameID).Distinct() });
-            var channels = users.Join(streams, u => u.ID, s => s.UserID, (u, s) => new ChannelInfo { User = u, Stream = s }).ToArray();
+            var channels = users.GroupJoin(streams, u => u.ID, s => s.UserID, (u, s) => new ChannelInfo { User = u, Stream = s.SingleOrDefault() }).ToArray();
             var priority = channels
                 .Where(c => Config.PriorityChannels.Contains(c.User.DisplayName.ToLower()))
                 .OrderBy(c => c.User.DisplayName)
