@@ -6,7 +6,32 @@ using System.Threading.Tasks;
 
 namespace TwitchApp.NewApi
 {
-    public abstract class BaseParameters
+    public abstract class ParametersBase
+    {
+        protected string ToStringHelper(params (object value, string name)[] parameters)
+        {
+            List<string> parts = new List<string>();
+            foreach (var parameter in parameters)
+                if (false == parameter.value is default) //default of obj is only checking for null
+                {
+                    string part;
+                    switch (parameter.value)
+                    {
+                        case IEnumerable<string> list: part = String.Join("&", list.Select(s => $"{parameter.name}={s}")); break;
+                        case int i when i is default: continue; //ignoring value types by hand...
+                        case int i: part = $"{parameter.name}={i}"; break;
+                        case string s when parameter.name == null: part = s; break;
+                        case string s: part = $"{parameter.name}={s}"; break;
+                        default: throw new ArgumentException($"unkown type of parameter ({parameter.value} : {parameter.value.GetType()})");
+                    }
+                    parts.Add(part);
+
+                }
+            return String.Join("&", parts);
+        }
+    }
+
+    public abstract class PageParameters : ParametersBase
     {
         /// <summary>
         /// Cursor for forward pagination: tells the server where to start fetching the next set of results, in a multi-page response.
@@ -23,18 +48,14 @@ namespace TwitchApp.NewApi
 
         public override string ToString()
         {
-            List<string> parts = new List<string>();
-            if (false == After is null)
-                parts.Add($"after={After}");
-            if (false == Before is null)
-                parts.Add($"before={Before}");
-            if (First != 0)
-                parts.Add($"first={First}");
-            return String.Join("&", parts);
+            return ToStringHelper(
+                (After, "after"),
+                (Before, "before"),
+                (First, "first"));
         }
     }
 
-    public class EntitlementsParameters
+    public class EntitlementsParameters : ParametersBase
     {
         /// <summary>
         /// manifest_id: Unique identifier of the manifest file to be uploaded. Must be 1-64 characters.
@@ -44,9 +65,16 @@ namespace TwitchApp.NewApi
         /// type: Type of entitlement being granted. Only bulk_drops_grant is supported.
         /// </summary>
         public string Type => "bulk_drops_grant";
+
+        public override string ToString()
+        {
+            return "?" + ToStringHelper(
+                (ManifestID, "manifest_id"),
+                (Type, "type"));
+        }
     }
 
-    public class GamesParameters
+    public class GamesParameters : ParametersBase
     {
         /// <summary>
         /// User ID. Multiple user IDs can be specified. Limit: 100.
@@ -59,16 +87,13 @@ namespace TwitchApp.NewApi
 
         public override string ToString()
         {
-            List<string> parts = new List<string>();
-            if (false == IDs is null)
-                parts.Add(String.Join("&", IDs.Select(s => $"id={s}")));
-            if (false == Names is null)
-                parts.Add($"name={String.Join(",", Names)}");
-            return $"?{String.Join("&", parts)}";
+            return "?" + ToStringHelper(
+                (IDs, "id"),
+                (Names, "name"));
         }
     }
 
-    public class StreamsParameters : BaseParameters
+    public class StreamsParameters : PageParameters
     {
         /// <summary>
         /// Returns streams in a specified community ID. You can specify up to 100 IDs.
@@ -97,27 +122,18 @@ namespace TwitchApp.NewApi
 
         public override string ToString()
         {
-            List<string> parts = new List<string>();
-            string baseParts = base.ToString();
-            if (!String.IsNullOrWhiteSpace(baseParts))
-                parts.Add(baseParts);
-            if (false == CommunityIDs is null)
-                parts.Add($"community_id={String.Join(",", CommunityIDs)}");
-            if (false == GameIDs is null)
-                parts.Add($"game_id={String.Join(",", GameIDs)}");
-            if (false == Languages is null)
-                parts.Add($"language={String.Join(",", Languages)}");
-            if (false == Type is null)
-                parts.Add($"type={Type}");
-            if (false == UserIDs is null)
-                parts.Add(String.Join("&", UserIDs.Select(s => $"user_id={s}")));
-            if (false == UserLogins is null)
-                parts.Add($"user_login={String.Join(",", UserLogins)}");
-            return $"?{String.Join("&", parts)}";
+            return "?" + ToStringHelper(
+                (base.ToString(), null),
+                (CommunityIDs, "community_id"),
+                (GameIDs, "game_id"),
+                (Languages, "language"),
+                (Type, "type"),
+                (UserIDs, "user_id"),
+                (UserLogins, "user_login"));
         }
     }
 
-    public class UsersParameters
+    public class UsersParameters : ParametersBase
     {
         /// <summary>
         /// User ID. Multiple user IDs can be specified. Limit: 100.
@@ -130,16 +146,13 @@ namespace TwitchApp.NewApi
 
         public override string ToString()
         {
-            List<string> parts = new List<string>();
-            if (false == IDs is null)
-                parts.Add(String.Join("&", IDs.Select(s => $"id={s}")));
-            if (false == Logins is null)
-                parts.Add(String.Join("&", Logins.Select(s => $"login={s}")));
-            return $"?{String.Join("&", parts)}";
+            return "?" + ToStringHelper(
+                (IDs, "id"),
+                (Logins, "login"));
         }
     }
 
-    public class UsersFollowsParameters : BaseParameters
+    public class UsersFollowsParameters : PageParameters
     {
         /// <summary>
         /// User ID. The request returns information about users who are being followed by the from_id user.
@@ -152,15 +165,10 @@ namespace TwitchApp.NewApi
 
         public override string ToString()
         {
-            List<string> parts = new List<string>();
-            string baseParts = base.ToString();
-            if (!String.IsNullOrWhiteSpace(baseParts))
-                parts.Add(baseParts);
-            if (!String.IsNullOrWhiteSpace(FromID))
-                parts.Add($"from_id={FromID}");
-            if (!String.IsNullOrWhiteSpace(ToID))
-                parts.Add($"to_id={ToID}");
-            return $"?{String.Join("&", parts)}";
+            return "?" + ToStringHelper(
+                (base.ToString(), null),
+                (FromID, "from_id"),
+                (ToID, "to_id"));
         }
     }
 }
