@@ -1,9 +1,12 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace TwitchApp.NewApi
@@ -104,12 +107,45 @@ namespace TwitchApp.NewApi
             return await Task.Run(() => JsonConvert.DeserializeObject<ResponseWrapper<T>>(response));
         }
 
+
+        private DateTime NextLimitReset = DateTime.MinValue;
+        private static readonly int MaxRequests = 30;
+        private int RequestsRemaining = MaxRequests;
+
         private async Task<string> GetResponseAsync(string url)
         {
-            using (var response = await HttpClient.GetAsync(url))
+            while (true)
             {
-                //TODO: rate limit
-                return await response.Content.ReadAsStringAsync();
+                DateTime next = NextLimitReset;
+                if (next > DateTime.UtcNow && RequestsRemaining < 1)
+                {
+                    int delay = Math.Max(0, (int)(next - DateTime.UtcNow).TotalMilliseconds);
+                    Debug.WriteLine($"too many requests, next reset at {next}, waiting {delay:N0}ms");
+                    await Task.Delay(delay);
+                    continue;
+                }
+
+                using (var response = await HttpClient.GetAsync(url))
+                {
+                    int nextRequest = int.Parse(response.Headers.GetValues("Ratelimit-Reset").First());
+                    RequestsRemaining = int.Parse(response.Headers.GetValues("Ratelimit-Remaining").First());
+                    NextLimitReset = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(nextRequest);
+                    string result = await response.Content.ReadAsStringAsync();
+                    string info = $"\nrequest: {url}\nresponse: {result}";
+                    switch (response.StatusCode)
+                    {
+                        case HttpStatusCode.BadRequest:
+                            Debug.WriteLine($"Bad Request (400){info}");
+                            return null;
+                        case (HttpStatusCode)429:
+                            Debug.WriteLine($"Too Many Requests(429){info}");
+                            break;
+                        case HttpStatusCode.OK:
+                            return result;
+                        default:
+                            throw new NotImplementedException($"unexpected statuscode ({response.StatusCode}){info}");
+                    }
+                }
             }
         }
 

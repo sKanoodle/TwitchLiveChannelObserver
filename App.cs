@@ -76,7 +76,7 @@ namespace TwitchApp
                     nextUpdateRun = nextUpdateRun.AddSeconds(60);
                 }
                 var time = DateTime.UtcNow;
-                Thread.Sleep(Math.Max(0, Math.Min((nextDrawRun - time).Milliseconds, (nextUpdateRun - time).Milliseconds)));
+                Thread.Sleep(Math.Max(0, Math.Min((int)(nextDrawRun - time).TotalMilliseconds, (int)(nextUpdateRun - time).TotalMilliseconds)));
             }
         }
 
