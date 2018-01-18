@@ -45,7 +45,15 @@ namespace TwitchApp
 
             if (IsOnline)
             {
-                SetBackAndForeground(ConsoleColor.DarkGreen, ConsoleColor.White);
+                ConsoleColor bgColor;
+                switch (Stream.Type)
+                {
+                    case StreamType.live: bgColor = ConsoleColor.DarkGreen; break;
+                    case StreamType.vodcast: bgColor = ConsoleColor.DarkBlue; break;
+                    case StreamType.playlist: bgColor = ConsoleColor.DarkCyan; break;
+                    default: return;
+                }
+                SetBackAndForeground(bgColor, ConsoleColor.White);
                 Console.Write(" online ".PadLeft(Lengths.Live));
             }
             else

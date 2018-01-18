@@ -48,7 +48,7 @@ namespace TwitchApp.NewApi
         /// Stream type: "live", "vodcast", "playlist", or "".
         /// </summary>
         [JsonProperty("type")]
-        public string Type { get; set; }
+        public StreamType Type { get; set; }
         /// <summary>
         /// ID of the user who is streaming.
         /// </summary>
@@ -59,5 +59,13 @@ namespace TwitchApp.NewApi
         /// </summary>
         [JsonProperty("viewer_count")]
         public int ViewerCount { get; set; }
+    }
+
+    enum StreamType
+    {
+        none,
+        live,
+        vodcast,
+        playlist,
     }
 }
