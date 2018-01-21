@@ -65,7 +65,8 @@ namespace TwitchApp.NewApi
     {
         none,
         live,
-        vodcast,
+        //vodcast,
         playlist,
+        rerun,
     }
 }

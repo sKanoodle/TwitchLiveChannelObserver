@@ -49,7 +49,7 @@ namespace TwitchApp
                 switch (Stream.Type)
                 {
                     case StreamType.live: bgColor = ConsoleColor.DarkGreen; break;
-                    case StreamType.vodcast: bgColor = ConsoleColor.DarkBlue; break;
+                    case StreamType.rerun: bgColor = ConsoleColor.DarkBlue; break;
                     case StreamType.playlist: bgColor = ConsoleColor.DarkCyan; break;
                     default: return;
                 }
