@@ -68,5 +68,6 @@ namespace TwitchApp.NewApi
         //vodcast,
         playlist,
         rerun,
+        premiere, //???????
     }
 }

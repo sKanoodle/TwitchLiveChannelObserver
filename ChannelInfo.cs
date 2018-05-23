@@ -51,6 +51,7 @@ namespace TwitchApp
                     case StreamType.live: bgColor = ConsoleColor.DarkGreen; break;
                     case StreamType.rerun: bgColor = ConsoleColor.DarkBlue; break;
                     case StreamType.playlist: bgColor = ConsoleColor.DarkCyan; break;
+                    case StreamType.premiere: bgColor = ConsoleColor.DarkMagenta; break;
                     default: return;
                 }
                 SetBackAndForeground(bgColor, ConsoleColor.White);

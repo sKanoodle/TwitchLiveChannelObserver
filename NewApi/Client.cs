@@ -104,7 +104,7 @@ namespace TwitchApp.NewApi
         private async Task<ResponseWrapper<T>> GetTypedResponseAsync<T>(string url)
         {
             string response = await GetResponseAsync(url);
-            return await Task.Run(() => JsonConvert.DeserializeObject<ResponseWrapper<T>>(response));
+            return await Task.Run(() => JsonConvert.DeserializeObject<ResponseWrapper<T>>(response, new JsonSerializerSettings { DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate }));
         }
 
 
