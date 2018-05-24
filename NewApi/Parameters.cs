@@ -12,13 +12,13 @@ namespace TwitchApp.NewApi
         {
             List<string> parts = new List<string>();
             foreach (var parameter in parameters)
-                if (false == parameter.value is default) //default of obj is only checking for null
+                if (false == parameter.value is null)
                 {
                     string part;
                     switch (parameter.value)
                     {
                         case IEnumerable<string> list: part = String.Join("&", list.Select(s => $"{parameter.name}={s}")); break;
-                        case int i when i is default: continue; //ignoring value types by hand...
+                        case int i when i is 0: continue; //ignoring value types by hand...
                         case int i: part = $"{parameter.name}={i}"; break;
                         case string s when parameter.name == null: part = s; break;
                         case string s: part = $"{parameter.name}={s}"; break;

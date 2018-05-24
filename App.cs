@@ -15,7 +15,16 @@ namespace TwitchApp
         private User Self;
         private int LineCount;
         private bool DoUpdateLineCount = true;
-        
+
+        private bool DoCustomSort => CustomSort != null;
+        private Func<ChannelInfo, object> CustomSort;
+        private Dictionary<ConsoleKey, (Func<ChannelInfo, object> SortConstraint, string Description)> AvailableSorts = new Dictionary<ConsoleKey, (Func<ChannelInfo, object>, string)>
+        {
+            [ConsoleKey.A] = (null, "Default"),
+            [ConsoleKey.S] = (c => c.Stream?.ViewerCount, "Viewers"),
+            [ConsoleKey.D] = (c => c.User?.DisplayName, "Name"),
+        };
+
         private ChannelInfo[] FollowedChannels;
         private ChannelInfo[] PriorityChannels;
         private readonly object Lock = new object();
@@ -65,6 +74,7 @@ namespace TwitchApp
 
             while (true)
             {
+                HandleKeyPress();
                 if (DateTime.UtcNow.CompareTo(nextDrawRun) > 0)
                 {
                     Draw();
@@ -78,6 +88,16 @@ namespace TwitchApp
                 var time = DateTime.UtcNow;
                 Thread.Sleep(Math.Max(0, Math.Min((int)(nextDrawRun - time).TotalMilliseconds, (int)(nextUpdateRun - time).TotalMilliseconds)));
             }
+        }
+
+        private void HandleKeyPress()
+        {
+            if (!Console.KeyAvailable)
+                return;
+
+            var key = Console.ReadKey(intercept: true);
+            if (AvailableSorts.TryGetValue(key.Key, out var pair))
+                CustomSort = pair.SortConstraint;
         }
 
         private async Task Update()
@@ -147,8 +167,10 @@ namespace TwitchApp
                     info.DrawInConsole(true, ref count);
                 Console.WriteLine();
                 Interlocked.Increment(ref count);
-                foreach (ChannelInfo info in FollowedChannels)
+                foreach (ChannelInfo info in DoCustomSort ? FollowedChannels.OrderBy(CustomSort) : (IEnumerable<ChannelInfo>)FollowedChannels)
                     info.DrawInConsole(false, ref count);
+                DrawEmptyLine();
+                Console.WriteLine($"Order: {String.Join(", ", AvailableSorts.Select(kvp => $"[{kvp.Key}] ({kvp.Value.Description})"))}");
 
                 int difference= LineCount - count;
                 while (difference-- > 0)
